@@ -1,0 +1,13 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*~
+.idea/
+.vscode/
+
+# Node (none currently, but just in case)
+node_modules/
+npm-debug.log*
+
+# Local Netlify state
+.netlify/

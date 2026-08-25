@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <title>Capybaradoku</title>
+    <meta name="description" content="A cozy capybara logic puzzle. Place one capybara per row, column, and colour patch — no touching." />
+
+    <!-- PWA / iOS add-to-home-screen -->
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <meta name="theme-color" content="#b7d7a8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Capybaradoku" />
+    <link rel="apple-touch-icon" href="./icons/icon-180.png" />
+    <link rel="icon" href="./icons/icon-180.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Capybaradoku <span id="solved-flag" title="solved">✅</span></h1>
+        <div class="sub">
+          <span id="level-label">Level 1</span>
+          <span class="dot">•</span>
+          <span id="diff-label">Gentle</span>
+        </div>
+        <div class="statbar">
+          <span id="score" class="score" title="Lifetime score">0</span>
+          <span id="hearts" class="hearts">❤️❤️❤️</span>
+          <span id="streak" class="streak" title="Win streak"></span>
+        </div>
+      </header>
+
+      <main>
+        <div id="board-wrap">
+          <div id="board"></div>
+          <div id="overlay">
+            <div class="card">
+              <h2 id="overlay-title">Solved!</h2>
+              <p id="overlay-msg"></p>
+              <div id="overlay-score"></div>
+              <div class="overlay-btns">
+                <button id="overlay-retry" class="btn">Retry</button>
+                <button id="overlay-next" class="btn primary">Next level →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <div class="controls">
+          <button id="undo" class="btn">Undo</button>
+          <button id="reset" class="btn">Reset</button>
+        </div>
+        <p class="rules">
+          Tap a cell to cycle: note dot →
+          <img src="./assets/capybara.png" class="inline-capy" alt="capybara" />
+          → clear. Place one capybara in every row, column and colour patch. No
+          two may touch, even diagonally.
+        </p>
+      </footer>
+    </div>
+    <script type="module" src="./src/game.js"></script>
+  </body>
+</html>

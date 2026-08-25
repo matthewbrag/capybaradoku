@@ -1,0 +1,12 @@
+{
+  "name": "capybaradoku",
+  "version": "0.1.0",
+  "description": "A cozy capybara logic puzzle (Meowdoku/Queens-style) as an offline, installable PWA.",
+  "type": "module",
+  "scripts": {
+    "bake": "node tools/bake.mjs",
+    "icons": "node tools/make-icons.mjs",
+    "serve": "python3 -m http.server 8877"
+  },
+  "license": "MIT"
+}
