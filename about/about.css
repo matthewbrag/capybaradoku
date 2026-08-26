@@ -80,3 +80,4 @@ footer.site { border-top: 1px solid var(--line); margin-top: 48px; padding-top: 
 footer.site a { color: var(--muted); }
 .center { text-align: center; }
 .mt { margin-top: 28px; }
+.cap-emoji { height: 1.15em; width: auto; vertical-align: -0.22em; }
