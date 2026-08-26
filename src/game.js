@@ -296,9 +296,9 @@ function tapCell(i) {
     state.lastDelta = delta;
     state.freshWin = true;
     cheer();
-    // Push to the shared board (best-effort; no-op if unconfigured/offline).
-    const name = getName();
-    if (name) submitScore(getPlayerId(), name, prog.lifetime, highestSolvedLevel(prog));
+    // The shared-board submit + display happens in loadOverlayBoard() during the
+    // win render, so the player's just-earned score is reflected in the board
+    // they see. It's fully best-effort and skipped when offline/unconfigured.
   }
   saveGameState();
   render();
@@ -381,18 +381,51 @@ function render() {
       const gained = $("#gained");
       if (gained) animateNumber(gained, 0, state.lastScore.total, 700, "+");
     }
+    loadOverlayBoard(); // async; submits + shows the mini leaderboard (offline-safe)
   } else if (state.status === "lost") {
     overlay.style.display = "flex";
     $("#overlay-title").textContent = "Out of hearts 💔";
     $("#overlay-msg").textContent = "Give it another go — same puzzle.";
     $("#overlay-next").style.display = "none";
     $("#overlay-score").innerHTML = "";
+    $("#overlay-board").style.display = "none";
   } else {
     overlay.style.display = "none";
   }
 
   state.justPlaced = -1; // one-shot: only the render right after a placement animates
   state.freshWin = false; // one-shot: the count-up plays only on the winning render
+}
+
+// Win-screen mini leaderboard. Submits the player's fresh score, then shows the
+// top few. Fully offline-safe: if unconfigured, offline, or the fetch fails, the
+// section simply doesn't render and the win screen is unaffected.
+async function loadOverlayBoard() {
+  const el = $("#overlay-board");
+  if (!el) return;
+  el.style.display = "none";
+  if (!isConfigured() || !navigator.onLine) return;
+
+  const name = getName();
+  const prog = loadProgress();
+  if (name) await submitScore(getPlayerId(), name, prog.lifetime, highestSolvedLevel(prog));
+
+  const rows = await fetchTop(5);
+  if (!rows.length) return; // offline/empty/error -> stay hidden
+
+  const me = getPlayerId();
+  el.innerHTML =
+    `<div class="ob-title">🏆 Leaderboard</div>` +
+    rows
+      .map((r, i) => {
+        const mine = r.id === me ? " mine" : "";
+        return `<div class="ob-row${mine}"><span class="lb-rank">${i + 1}</span><span class="lb-name">${escapeHTML(
+          r.name
+        )}</span><span class="lb-score">${fmt(r.score)}</span></div>`;
+      })
+      .join("") +
+    (name ? "" : `<div class="ob-hint">Tap 🏆 below to add your name</div>`);
+  el.style.display = "block";
 }
 
 // Build the win-overlay score breakdown (base × multipliers = solve score).

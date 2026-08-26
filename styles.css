@@ -93,6 +93,26 @@ h1 {
 .breakdown span:nth-child(even) { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
 .delta-note { font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
 
+/* win-screen mini leaderboard */
+.overlay-board {
+  display: none;
+  text-align: left;
+  margin: 4px 0 12px;
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  padding-top: 10px;
+}
+.ob-title { font-weight: 700; font-size: 0.9rem; text-align: center; margin-bottom: 6px; }
+.ob-row {
+  display: grid;
+  grid-template-columns: 2ch 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 4px;
+  font-size: 0.9rem;
+}
+.ob-row.mine { background: color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 7px; }
+.ob-hint { font-size: 0.76rem; color: var(--muted); text-align: center; margin-top: 6px; }
+
 main { flex: 1; display: flex; align-items: center; justify-content: center; }
 #board-wrap { position: relative; width: 100%; }
 
