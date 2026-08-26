@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1200px; height: 630px; }
+      .card {
+        width: 1200px;
+        height: 630px;
+        display: flex;
+        align-items: center;
+        gap: 40px;
+        padding: 0 80px;
+        background: linear-gradient(135deg, #8fc178 0%, #7fb069 55%, #6ba05c 100%);
+        font-family: "SF Pro Rounded", ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        color: #21331b;
+      }
+      .card img { width: 380px; height: 380px; flex: none; filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.18)); }
+      .text { display: flex; flex-direction: column; }
+      h1 { font-size: 96px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+      .tag { font-size: 40px; font-weight: 600; margin-top: 18px; color: #2c451f; }
+      .pills { display: flex; gap: 14px; margin-top: 30px; }
+      .pill {
+        background: rgba(255, 255, 255, 0.85);
+        color: #234d1a;
+        font-size: 28px;
+        font-weight: 700;
+        padding: 10px 22px;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img src="file:///home/matthew/projects/capybaradoku/assets/capybara.png" alt="capybara" />
+      <div class="text">
+        <h1>Capybaradoku</h1>
+        <div class="tag">The free, ad-free capybara puzzle</div>
+        <div class="pills">
+          <span class="pill">No ads</span>
+          <span class="pill">Plays offline</span>
+          <span class="pill">2,000+ levels</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
