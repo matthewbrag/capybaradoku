@@ -1,0 +1,17 @@
+# Capybaradoku is fully static — no build step, publish the repo root as-is.
+[build]
+  publish = "."
+
+# The service worker must be revalidated on every load so shipped updates take
+# effect promptly (otherwise a CDN-cached sw.js could pin an old version).
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Keep app code + the level pack revalidating too, so pushes go live quickly.
+# (Netlify's ETag handling makes this cheap — 304s when unchanged.)
+[[headers]]
+  for = "/src/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
