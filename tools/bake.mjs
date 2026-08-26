@@ -22,18 +22,20 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // NOTE: with single-cell regions banned, tier 1 (Gentle) is effectively extinct
 // (a lone cell was the source of instant free singles), so the ramp starts at
 // tier 2 (Easy).
+// ~2,000-level ramp. Rare/slow combos (Easy@9, Tricky@10) are kept small; the
+// abundant, fast tiers carry the bulk so the bake stays to ~35-45 min.
 const PLAN = [
-  { N: 7, tier: 2, count: 8 },
-  { N: 7, tier: 3, count: 12 },
-  { N: 8, tier: 2, count: 8 },
-  { N: 8, tier: 3, count: 14 },
-  { N: 7, tier: 4, count: 8 },
-  { N: 9, tier: 2, count: 6 },
-  { N: 9, tier: 3, count: 16 },
-  { N: 8, tier: 4, count: 12 },
-  { N: 10, tier: 3, count: 5 },
-  { N: 9, tier: 4, count: 16 },
-  { N: 10, tier: 4, count: 16 },
+  { N: 7, tier: 2, count: 50 },
+  { N: 7, tier: 3, count: 100 },
+  { N: 7, tier: 4, count: 80 },
+  { N: 8, tier: 2, count: 50 },
+  { N: 8, tier: 3, count: 200 },
+  { N: 8, tier: 4, count: 200 },
+  { N: 9, tier: 2, count: 25 },
+  { N: 9, tier: 3, count: 300 },
+  { N: 9, tier: 4, count: 770 },
+  { N: 10, tier: 3, count: 25 },
+  { N: 10, tier: 4, count: 200 },
 ];
 
 function fillBlock({ N, tier, count }) {

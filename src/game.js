@@ -5,6 +5,7 @@
 // state. Falls back to on-device generation for levels beyond the pack.
 
 import { generate } from "./generator.js";
+import { isConfigured, submitScore, fetchTop } from "./scoreboard.js";
 
 const REGION_COLORS = [
   "#c98a5e", // capybara brown
@@ -112,6 +113,41 @@ function clearGameState(level) {
     delete all[level];
     localStorage.setItem(GAMESTATE_KEY, JSON.stringify(all));
   } catch {}
+}
+
+// Stable per-device player id — the scoreboard is keyed on this, so changing
+// your display name updates your existing row instead of making a new one.
+const PLAYER_ID_KEY = "capy.playerId.v1";
+function getPlayerId() {
+  try {
+    let id = localStorage.getItem(PLAYER_ID_KEY);
+    if (!id) {
+      id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(PLAYER_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return `anon-${Math.random().toString(36).slice(2)}`;
+  }
+}
+
+// Player display name for the shared scoreboard.
+const NAME_KEY = "capy.name.v1";
+function getName() {
+  try {
+    return localStorage.getItem(NAME_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+function setName(n) {
+  try {
+    localStorage.setItem(NAME_KEY, n);
+  } catch {}
+}
+function highestSolvedLevel(prog) {
+  const keys = Object.keys(prog.solved || {}).map(Number);
+  return keys.length ? Math.max(...keys) : 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -260,6 +296,9 @@ function tapCell(i) {
     state.lastDelta = delta;
     state.freshWin = true;
     cheer();
+    // Push to the shared board (best-effort; no-op if unconfigured/offline).
+    const name = getName();
+    if (name) submitScore(getPlayerId(), name, prog.lifetime, highestSolvedLevel(prog));
   }
   saveGameState();
   render();
@@ -412,10 +451,62 @@ async function init() {
   $("#overlay-next").addEventListener("click", () => startLevel(state.level + 1));
   $("#overlay-retry").addEventListener("click", () => startLevel(state.level, { fresh: true }));
 
+  // Leaderboard: hide the button entirely until a backend is configured.
+  const lbBtn = $("#leaderboard-btn");
+  if (isConfigured()) {
+    lbBtn.addEventListener("click", openLeaderboard);
+    $("#lb-close").addEventListener("click", () => ($("#leaderboard").style.display = "none"));
+    $("#lb-name-save").addEventListener("click", saveNameAndSubmit);
+  } else {
+    lbBtn.style.display = "none";
+  }
+
   // register service worker for offline / installable PWA
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js").catch(() => {});
   }
+}
+
+// ---------------------------------------------------------------------------
+// Leaderboard modal
+// ---------------------------------------------------------------------------
+async function openLeaderboard() {
+  const modal = $("#leaderboard");
+  modal.style.display = "flex";
+  $("#lb-name").value = getName();
+  const list = $("#lb-list");
+  list.innerHTML = `<div class="lb-loading">Loading…</div>`;
+  const rows = await fetchTop(20);
+  const me = getPlayerId();
+  if (!rows.length) {
+    list.innerHTML = `<div class="lb-loading">No scores yet — be the first!</div>`;
+    return;
+  }
+  list.innerHTML = rows
+    .map((r, i) => {
+      const mine = r.id === me ? " mine" : "";
+      return `<div class="lb-row${mine}">
+        <span class="lb-rank">${i + 1}</span>
+        <span class="lb-name">${escapeHTML(r.name)}</span>
+        <span class="lb-lvl">Lv ${r.best_level ?? "-"}</span>
+        <span class="lb-score">${fmt(r.score)}</span>
+      </div>`;
+    })
+    .join("");
+}
+
+async function saveNameAndSubmit() {
+  const input = $("#lb-name");
+  const name = input.value.trim().slice(0, 20);
+  if (!name) return;
+  setName(name);
+  const prog = loadProgress();
+  await submitScore(getPlayerId(), name, prog.lifetime, highestSolvedLevel(prog));
+  openLeaderboard(); // refresh with the player's row now present/highlighted
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
 init();

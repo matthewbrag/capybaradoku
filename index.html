@@ -54,6 +54,7 @@
         <div class="controls">
           <button id="undo" class="btn">Undo</button>
           <button id="reset" class="btn">Reset</button>
+          <button id="leaderboard-btn" class="btn" title="Leaderboard">🏆</button>
         </div>
         <p class="rules">
           Tap a cell to cycle: note dot →
@@ -63,6 +64,19 @@
         </p>
       </footer>
     </div>
+
+    <div id="leaderboard" class="modal">
+      <div class="card lb-card">
+        <h2>🏆 Leaderboard</h2>
+        <div class="lb-namebar">
+          <input id="lb-name" type="text" maxlength="20" placeholder="Your name" />
+          <button id="lb-name-save" class="btn primary">Save</button>
+        </div>
+        <div id="lb-list" class="lb-list"></div>
+        <button id="lb-close" class="btn">Close</button>
+      </div>
+    </div>
+
     <script type="module" src="./src/game.js"></script>
   </body>
 </html>
