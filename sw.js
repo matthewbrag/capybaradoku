@@ -2,7 +2,7 @@
 // get the latest files (no stale-cache surprises during development); when
 // offline the app still loads from the last cached copy. Bump CACHE to force a
 // clean refresh of precached assets.
-const CACHE = "capybaradoku-v5";
+const CACHE = "capybaradoku-v6";
 const ASSETS = [
   "./",
   "./index.html",
