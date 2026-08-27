@@ -345,8 +345,7 @@ function render() {
         if (i === state.justPlaced) cell.classList.add("placed"); // animate once
         if (bad.has(i)) cell.classList.add("bad");
       } else if (s === MARK) {
-        cell.textContent = "·";
-        cell.classList.add("mark");
+        cell.classList.add("mark"); // dot drawn via CSS ::after (layout-neutral)
       }
       cell.addEventListener("click", () => tapCell(i));
       board.appendChild(cell);
