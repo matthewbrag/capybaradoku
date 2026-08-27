@@ -41,6 +41,8 @@ const state = {
   lastScore: null, // score breakdown of the most recent win
   lastDelta: 0, // amount added to the lifetime total by the most recent win
   freshWin: false, // true for the single render right after a win (drives the count-up)
+  cellEls: null, // persistent cell <button> elements (built once per level)
+  builtLevel: -1, // which level the current cell elements were built for
 };
 
 // --- Scoring: a local "number go up" loop. Tune these freely. ---
@@ -319,38 +321,58 @@ function undo() {
 // ---------------------------------------------------------------------------
 const DIFF_NAMES = { 1: "Gentle", 2: "Easy", 3: "Tricky", 4: "Fiendish" };
 
-function render() {
-  const { N } = state;
-  const bad = conflicts();
+// Build the grid ONCE per level (colors, region borders, a persistent capybara
+// <img> per cell). Rebuilding every render recreated the images and made them
+// flicker; instead we build here and only toggle classes in updateCells().
+function ensureBoard() {
+  if (state.builtLevel === state.level && state.cellEls) return;
+  const { N, regionOf } = state;
   const board = $("#board");
   board.style.setProperty("--n", N);
   board.innerHTML = "";
-
+  state.cellEls = new Array(N * N);
   for (let r = 0; r < N; r++) {
     for (let c = 0; c < N; c++) {
       const i = idx(N, r, c);
       const cell = document.createElement("button");
       cell.className = "cell";
-      cell.style.background = REGION_COLORS[state.regionOf[i] % REGION_COLORS.length];
-      // draw thick borders between different regions
-      if (c === 0 || state.regionOf[i] !== state.regionOf[idx(N, r, c - 1)]) cell.classList.add("bl");
-      if (c === N - 1 || state.regionOf[i] !== state.regionOf[idx(N, r, c + 1)]) cell.classList.add("br");
-      if (r === 0 || state.regionOf[i] !== state.regionOf[idx(N, r - 1, c)]) cell.classList.add("bt");
-      if (r === N - 1 || state.regionOf[i] !== state.regionOf[idx(N, r + 1, c)]) cell.classList.add("bb");
-
-      const s = state.cells[i];
-      if (s === CAT) {
-        cell.innerHTML = CAPY_IMG;
-        cell.classList.add("cat");
-        if (i === state.justPlaced) cell.classList.add("placed"); // animate once
-        if (bad.has(i)) cell.classList.add("bad");
-      } else if (s === MARK) {
-        cell.classList.add("mark"); // dot drawn via CSS ::after (layout-neutral)
-      }
+      cell.style.background = REGION_COLORS[regionOf[i] % REGION_COLORS.length];
+      if (c === 0 || regionOf[i] !== regionOf[idx(N, r, c - 1)]) cell.classList.add("bl");
+      if (c === N - 1 || regionOf[i] !== regionOf[idx(N, r, c + 1)]) cell.classList.add("br");
+      if (r === 0 || regionOf[i] !== regionOf[idx(N, r - 1, c)]) cell.classList.add("bt");
+      if (r === N - 1 || regionOf[i] !== regionOf[idx(N, r + 1, c)]) cell.classList.add("bb");
+      const img = document.createElement("img");
+      img.className = "capy";
+      img.src = "./assets/capybara.png";
+      img.alt = "capybara";
+      img.draggable = false;
+      cell.appendChild(img); // always present; shown only when .cat
       cell.addEventListener("click", () => tapCell(i));
       board.appendChild(cell);
+      state.cellEls[i] = cell;
     }
   }
+  state.builtLevel = state.level;
+}
+
+// Reflect the current cell states by toggling classes on the persistent cells.
+function updateCells() {
+  const { N, cells } = state;
+  const bad = conflicts();
+  for (let i = 0; i < N * N; i++) {
+    const cell = state.cellEls[i];
+    const isCat = cells[i] === CAT;
+    cell.classList.toggle("cat", isCat);
+    cell.classList.toggle("mark", cells[i] === MARK);
+    cell.classList.toggle("bad", isCat && bad.has(i));
+    cell.classList.toggle("placed", isCat && i === state.justPlaced);
+  }
+}
+
+function render() {
+  const { N } = state;
+  ensureBoard();
+  updateCells();
 
   // HUD
   $("#level-label").textContent = `Level ${state.level}`;
@@ -466,9 +488,6 @@ function buzz() {
 function cheer() {
   if (navigator.vibrate) navigator.vibrate([40, 40, 40]);
 }
-
-// Capybara board token.
-const CAPY_IMG = `<img src="./assets/capybara.png" alt="capybara" draggable="false" />`;
 
 // ---------------------------------------------------------------------------
 // Wire up UI
