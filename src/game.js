@@ -248,15 +248,42 @@ function isWon() {
   return count === N && conflicts().size === 0;
 }
 
-// Cycle a cell empty -> mark -> cat -> empty. Placing a cat that creates a NEW
-// conflict costs a heart.
-function tapCell(i) {
+// Controls: a single tap toggles a note dot (empty <-> mark, and clears a
+// capybara); a double tap places a capybara. This is less error-prone than the
+// old empty->mark->cat->empty cycle where one stray tap could drop a capybara.
+const DOUBLE_TAP_MS = 280;
+let lastTapIndex = -1;
+let lastTapTime = 0;
+
+function onTap(i) {
+  if (state.status !== "playing") return;
+  const now = Date.now();
+  const isDouble = i === lastTapIndex && now - lastTapTime < DOUBLE_TAP_MS;
+  if (isDouble) {
+    lastTapIndex = -1;
+    lastTapTime = 0;
+    // Fold the first tap's optimistic note dot back in so a double tap counts as
+    // a single undo step and never double-charges a mistake.
+    const top = state.history[state.history.length - 1];
+    if (top && top.i === i) {
+      state.cells[i] = top.prev;
+      state.history.pop();
+    }
+    setCell(i, CAT); // place a capybara (no-op if one is already here)
+    return;
+  }
+  lastTapIndex = i;
+  lastTapTime = now;
+  const prev = state.cells[i];
+  setCell(i, prev === EMPTY ? MARK : EMPTY);
+}
+
+// Apply a cell transition, running the mistake and win checks. Placing a cat
+// that creates a NEW conflict costs a heart.
+function setCell(i, next) {
   if (state.status !== "playing") return;
   const prev = state.cells[i];
-  let next;
-  if (prev === EMPTY) next = MARK;
-  else if (prev === MARK) next = CAT;
-  else next = EMPTY;
+  if (prev === next) return;
 
   state.history.push({ i, prev });
   state.cells[i] = next;
@@ -347,7 +374,7 @@ function ensureBoard() {
       img.alt = "capybara";
       img.draggable = false;
       cell.appendChild(img); // always present; shown only when .cat
-      cell.addEventListener("click", () => tapCell(i));
+      cell.addEventListener("click", () => onTap(i));
       board.appendChild(cell);
       state.cellEls[i] = cell;
     }
